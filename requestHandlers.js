@@ -1,25 +1,29 @@
 
 
 var exec = require("child_process").exec;
-var querystring = require("querystring");
+var querystring = require("querystring"),
+    fs = require("fs"),
+    formidable = require("formidable");
 
-exports.start = function(response, postData)
+exports.start = function(response, request)
 {
     console.log("Request handler 'start' was called.");
     console.log("");
 
     var body = '<html>'+
         '<head>'+
-        '<meta http-equiv="Content-Type" content="text/html; '+
-        'charset=UTF-8" />'+
+        '<meta http-equiv="Content-Type" '+
+        'content="text/html; charset=UTF-8" />'+
         '</head>'+
         '<body>'+
-        '<form action="/upload" method="post">'+
-        '<textarea name="text" rows="20" cols="60"></textarea>'+
-        '<input type="submit" value="Submit text" />'+
+        '<form action="/upload" enctype="multipart/form-data" '+
+        'method="post">'+
+        '<input type="file" name="upload">'+
+        '<input type="submit" value="Upload file" />'+
         '</form>'+
         '</body>'+
         '</html>';
+
 
     response.writeHead(200, {"Content-Type" : "text/html"});
     response.write(body);
@@ -28,13 +32,46 @@ exports.start = function(response, postData)
 }
 
 
-exports.upload = function(response, postData)
+exports.upload = function(response, request)
 {
     console.log("Request handler 'upload' was called.");
     console.log("");
 
-    response.writeHead(200, {"Content-Type" : "text/plain"});
-    response.write("You've sent the text: " + querystring.parse(postData).text);
-    response.end();
+    var form = new formidable.IncomingForm();
+    console.log("about to parse");
+    form.parse(request, function(error, fields, files) {
+        console.log("parsing done");
+
+        /* Possible error on Windows systems:
+         tried to rename to an already existing file */
+        fs.rename(files.upload.path, "/tmp/test.png", function(err) {
+            if (err) {
+                fs.unlink("/workspace/nodejs-example/tmp/test.png");
+                fs.rename(files.upload.path, "/workspace/nodejs-example/tmp/test.png");
+            }
+        });
+        response.writeHead(200, {"Content-Type": "text/html"});
+        response.write("received image:<br/>");
+        response.write("<img src='/show' />");
+        response.end();
+    });
+}
+
+
+
+exports.show = function(response, request)
+{
+    console.log("Request handler 'show' was called.");
+    fs.readFile("/workspace/nodejs-example/tmp/test.png", "binary", function(error, file) {
+        if(error) {
+            response.writeHead(500, {"Content-Type": "text/plain"});
+            response.write(error + "\n");
+            response.end();
+        } else {
+            response.writeHead(200, {"Content-Type": "image/png"});
+            response.write(file, "binary");
+            response.end();
+        }
+    });
 }
 
