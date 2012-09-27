@@ -3,7 +3,7 @@
 var exec = require("child_process").exec;
 var querystring = require("querystring");
 
-function start(response, postData)
+exports.start = function(response, postData)
 {
     console.log("Request handler 'start' was called.");
     console.log("");
@@ -28,7 +28,7 @@ function start(response, postData)
 }
 
 
-function upload(response, postData)
+exports.upload = function(response, postData)
 {
     console.log("Request handler 'upload' was called.");
     console.log("");
@@ -38,6 +38,3 @@ function upload(response, postData)
     response.end();
 }
 
-
-exports.start = start;
-exports.upload = upload;

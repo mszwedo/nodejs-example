@@ -1,7 +1,7 @@
 
 
 
-function route(handle, pathname, response, postData) {
+exports.route = function (handle, pathname, response, postData) {
 
     console.log("About to route a request for " + pathname);
 
@@ -18,4 +18,3 @@ function route(handle, pathname, response, postData) {
     }
 }
 
-exports.route = route;

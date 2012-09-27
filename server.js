@@ -4,7 +4,7 @@ var http = require("http");
 var url  = require("url");
 
 
-function start(route, handle)
+exports.start = function(route, handle)
 {
     function onRequest(request, response) {
 
@@ -29,6 +29,3 @@ function start(route, handle)
 
     console.log("Server has started.");
 }
-
-
-exports.start = start;
